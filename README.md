@@ -57,7 +57,7 @@ A production version adds server-side authentication (hashed passwords, two-fact
 
 ## Performance
 
-Lighthouse, mobile profile: **Performance 100, Accessibility 100, Best Practices 100, SEO 100** (desktop: 100 on all four). One variable font (48 KB) preloaded with `font-display: optional` so the layout never jumps, the theme is applied before the first paint, no dependency to download.
+Lighthouse on the live site (22 October 2026), mobile profile: **Performance 98, Accessibility 100, Best Practices 100, SEO 100**; desktop profile: 100 on all four. One variable font (48 KB) preloaded with `font-display: optional` so the layout never jumps, the theme is applied before the first paint, no dependency to download.
 
 ## Stack
 

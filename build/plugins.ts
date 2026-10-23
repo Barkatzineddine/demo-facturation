@@ -57,10 +57,14 @@ export function serviceWorkerPlugin(keepPublic: (file: string) => boolean = () =
   };
 }
 
-function serviceWorkerSource(precache: string[], version: string): string {
+export const NAVIGATION_TIMEOUT_MS = 3000;
+
+export function serviceWorkerSource(precache: string[], version: string): string {
   return `// Generated at build time. Cache-first for the app shell, network-first for navigations.
 const CACHE = 'app-${version}';
 const PRECACHE = ${JSON.stringify(precache)};
+// a weak mobile signal must not keep the page blank: past this delay the cached shell answers
+const NAVIGATION_TIMEOUT = ${NAVIGATION_TIMEOUT_MS};
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting()));
 });
@@ -73,7 +77,14 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
   if (req.mode === 'navigate') {
-    event.respondWith(fetch(req).catch(() => caches.match('./', { ignoreSearch: true, ignoreVary: true })));
+    const shell = () => caches.match('./', { ignoreSearch: true, ignoreVary: true });
+    event.respondWith(new Promise((resolve, reject) => {
+      const timer = setTimeout(() => shell().then((hit) => { if (hit) resolve(hit); }), NAVIGATION_TIMEOUT);
+      fetch(req).then((res) => { clearTimeout(timer); resolve(res); }, () => {
+        clearTimeout(timer);
+        shell().then((hit) => (hit ? resolve(hit) : reject(new Error('offline and not cached'))));
+      });
+    }));
     return;
   }
   event.respondWith(caches.match(req, { ignoreSearch: true, ignoreVary: true }).then((hit) => hit || fetch(req).then((res) => {

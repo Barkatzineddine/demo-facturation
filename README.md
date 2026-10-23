@@ -101,7 +101,7 @@ Every push runs the [CI workflow](.github/workflows/ci.yml); the site is deploye
 | Gate | What it checks |
 | --- | --- |
 | Lint and types | `typescript-eslint` strict, React hooks rules, ban on `innerHTML` and friends; `tsc` strict |
-| Unit tests | 80 Vitest tests: dates, totals per VAT rate, statuses, numbering without gaps, the whole quote-to-paid-invoice life cycle, frozen invoices, acceptance proof and tampering, roles, portal links, sign-in throttling, PDF output, translations. Coverage thresholds on the logic (97 % of lines today) |
+| Unit tests | 85 Vitest tests: dates, totals per VAT rate, statuses, numbering without gaps, the whole quote-to-paid-invoice life cycle, frozen invoices, acceptance proof and tampering, roles, portal links, sign-in throttling, PDF output, translations, the service worker's network timeout. Coverage thresholds on the logic (97 % of lines today) |
 | Browser tests | 20 Playwright scenarios on a desktop and a mobile profile: the full flow across two tabs (sign in the portal, live notice, invoice, PDF download checked, payment), drag-and-drop with mouse and keyboard, roles, refusal and simulated payment, language switch, a quote tampered after signature, a replaced portal link, offline mode, axe scans (WCAG 2.2 AA) in both themes, CSP and Trusted Types. Any console error fails the test |
 | Lighthouse | Lighthouse CI budgets: performance ≥ 90, accessibility 100, best practices 100, SEO ≥ 90 |
 | Supply chain | `npm audit`, `npm ci --ignore-scripts`, Actions pinned by commit SHA, Dependabot with a 7-day cooldown |

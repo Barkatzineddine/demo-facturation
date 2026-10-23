@@ -55,8 +55,12 @@ test('lines reorder with the mouse and with the keyboard', async ({ page, isMobi
 
   // keyboard: focus the handle, Space, ArrowUp, Space
   await page.getByRole('button', { name: 'Déplacer la ligne 2' }).focus();
+  // each key waits for the previous step to land: a slow runner otherwise drops the line before it has moved
+  const dragged = page.locator('.le-row.is-dragging');
   await page.keyboard.press('Space');
+  await expect(dragged).toHaveCount(1);
   await page.keyboard.press('ArrowUp');
+  await expect.poll(() => dragged.evaluate((el) => el.style.transform)).toMatch(/translate3d\([^,]+, -/);
   await page.keyboard.press('Space');
   await expect.poll(labels).toEqual(['Dressing sur mesure', 'Main-d’œuvre menuisier']);
 

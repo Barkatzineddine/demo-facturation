@@ -3,58 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; require-trusted-types-for 'script'; trusted-types 'none'">
+<!-- CSP -->
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Morel Agencement · Devis, factures et portail client (démo)</title>
-<meta name="description" content="Application de gestion pour artisan : clients, devis convertis en factures, export PDF dans le navigateur, suivi des paiements, relances et graphiques du chiffre d'affaires. Démonstration, données fictives.">
+<meta name="description" content="Application de gestion pour artisan : clients, devis convertis en factures, PDF générés dans le navigateur, portail client avec signature, rôles et mises à jour en direct. Démonstration, données fictives.">
 <meta name="theme-color" content="#0f5f58">
 <link rel="canonical" href="https://barkatzineddine.github.io/demo-facturation/">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:title" content="Devis, factures et portail client (démo)">
-<meta property="og:description" content="Clients, devis, factures, PDF, relances, portail client et tableau de bord du chiffre d'affaires.">
-<meta property="og:image" content="https://barkatzineddine.github.io/demo-facturation/assets/img/og.jpg">
+<meta property="og:description" content="Clients, devis, factures, PDF, relances, portail client avec signature et tableau de bord, en direct entre onglets.">
+<meta property="og:image" content="https://barkatzineddine.github.io/demo-facturation/img/og.jpg">
 <meta property="og:url" content="https://barkatzineddine.github.io/demo-facturation/">
-<link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/style.css">
-<script src="assets/js/theme.js"></script>
-<script type="module" src="assets/js/app.js"></script>
+<link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script src="theme.js"></script>
 </head>
 <body>
-<a class="skip" href="#main">Aller au contenu</a>
-<div class="demo-bar">
-  <p><strong>Démo</strong> · Entreprise, clients et montants fictifs. Tout reste dans ce navigateur. <a href="https://barkatzineddine.github.io/#contact">Un outil comme celui-ci&nbsp;?</a></p>
-  <button class="demo-reset" type="button">Réinitialiser la démo</button>
-</div>
-<div class="shell">
-  <aside class="sidebar">
-    <a class="brand" href="#/" aria-label="Morel Agencement, tableau de bord">
-      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M8 23V9l8 7 8-7v14" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
-      <span><span class="brand-name">Morel Agencement</span><span class="brand-sub">Devis &amp; factures</span></span>
-    </a>
-    <nav class="nav" aria-label="Navigation principale">
-      <a href="#/" data-route=""><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4zm0 7h6v-5H4zm10 0h6v-9h-6zm0-16v5h6V4z" fill="currentColor"/></svg><span>Tableau de bord</span></a>
-      <a href="#/devis" data-route="devis"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7zm7 0v5h5M10 13h6M10 17h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Devis</span></a>
-      <a href="#/factures" data-route="factures"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Factures</span></a>
-      <a href="#/clients" data-route="clients"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 10c0-4 3-6 7-6s7 2 7 6M16 3.5a4 4 0 0 1 0 7.5M18 15c2.5.6 4 2.6 4 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Clients</span></a>
-      <a href="#/portail" data-route="portail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7zm-3 9l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Portail client</span></a>
-    </nav>
-    <div class="sidebar-foot">
-      <button type="button" class="theme-btn" aria-label="Changer de thème">Thème : auto</button>
-      <p class="sec-note"><a href="#/securite">Sécurité &amp; confidentialité</a></p>
-    </div>
-  </aside>
-  <main id="main" tabindex="-1">
-    <noscript><p class="noscript">Cette application de démonstration a besoin de JavaScript.</p></noscript>
-    <div id="view" class="view">
-      <h1>Devis, factures et portail client</h1>
-      <p>Chargement de l'application…</p>
-    </div>
-    <footer class="app-foot">
-      <p><a href="#/securite">Sécurité &amp; confidentialité</a> · <a href="https://github.com/Barkatzineddine/demo-facturation">Code source</a> · Démo conçue par <a href="https://barkatzineddine.github.io/#contact">Zineddine Barkat</a></p>
-    </footer>
-  </main>
-</div>
+<div id="root"></div>
+<noscript><p style="padding:20px">Cette démo a besoin de JavaScript.</p></noscript>
+<script type="module" src="/src/main.tsx"></script>
 </body>
 </html>

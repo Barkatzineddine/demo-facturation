@@ -1,0 +1,20 @@
+# Weekly updates, grouped, and only for releases at least a week old (supply-chain cooldown).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly }
+    cooldown: { default-days: 7 }
+    groups:
+      dependencies: { patterns: ['*'] }
+    ignore:
+      # majors that need a coordinated upgrade: TypeScript waits for typescript-eslint support,
+      # @types/node follows the Node.js version CI runs (24)
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    cooldown: { default-days: 7 }

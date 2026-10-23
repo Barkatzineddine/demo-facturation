@@ -1,99 +1,143 @@
-# Morel Agencement · quotes, invoices and client portal (demo)
+# Morel Agencement · quotes and invoices for a joinery business (demo)
 
-![Dashboard on desktop (light theme) and on a phone (dark theme): revenue figures, monthly chart and best clients](docs/hero.jpg)
+[![CI](https://github.com/Barkatzineddine/demo-facturation/actions/workflows/ci.yml/badge.svg)](https://github.com/Barkatzineddine/demo-facturation/actions/workflows/ci.yml)
+[![Live demo](https://img.shields.io/badge/demo-live-0f5f55)](https://barkatzineddine.github.io/demo-facturation/)
+![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178c6)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**Live demo: https://barkatzineddine.github.io/demo-facturation/** (works on a phone, light and dark themes)
+A quoting and invoicing tool for a fictional joiner in Bordeaux: quotes built line by line, sent to the client, **signed online in a client portal with a verifiable SHA-256 proof**, converted to invoices that follow French invoicing rules, exported as **PDF files generated in the browser**, paid, chased. Two staff roles, a dashboard with 14 months of history, and the office tab sees each client action live. French interface with an English switch, light and dark themes, installable, works offline.
 
-A business tool for a fictional joinery company in Bordeaux: clients, quotes turned into invoices, **PDF export generated in the browser**, payment tracking, reminders, revenue charts and a **client portal** where customers accept quotes with a timestamped e-signature. It is a portfolio piece by [Mohamed Zineddine Barkat](https://barkatzineddine.github.io/). The interface is in French; all data stays in your browser.
+**Live: <https://barkatzineddine.github.io/demo-facturation/>** (the sign-in page lists two demo accounts: the owner and the accountant). Company, clients and amounts are fictional.
 
-## Try it
+![Dashboard: cashed revenue, invoiced, still to collect, acceptance rate, monthly chart, best clients, invoices to chase, quotes awaiting an answer](docs/dashboard.webp)
 
-1. **Devis → + Nouveau devis**: pick a client, write the subject, add lines from the catalogue, watch the totals update, then **Envoyer au client**: the quote gets its final number.
-2. **Voir côté client**: you see the client portal. Sign the quote (name + "Bon pour accord").
-3. Back on the quote: the acceptance proof (SHA-256 fingerprint) is shown. **Convertir en facture**, then **Émettre la facture**.
-4. **Télécharger le PDF** on any quote or invoice. A sample is in [`docs/exemple-facture.pdf`](docs/exemple-facture.pdf).
-5. **Enregistrer un paiement**, or pay from the portal (simulated). Late invoices have a **Relancer** button with a ready-to-send reminder.
-6. **Factures → Journal des ventes (CSV)** for the accountant. **Réinitialiser la démo** in the top banner starts over.
+## Try it in two minutes
+
+1. **Sign in as the owner**, click **+ New quote**, pick a client, add lines from the catalogue, drag a line to reorder it (or Space and the arrow keys), preview the PDF, then **Send to client**: the quote gets its number.
+2. Open **Client portal** in a second tab and choose that client: the office tab shows "has just opened the quote". Sign it (name and "approved" box): the office is told at once and the quote shows its **acceptance proof, verified**.
+3. Back in the office: **Convert to invoice**, **Issue** (date and number are set, the invoice is now frozen), **Download the PDF**, then **Record a payment**.
+4. In the dashboard, **chase** a late invoice: the reminder text is ready to copy, and the reminder goes into the invoice history.
+5. Sign out and sign in as the **accountant**: payments, reminders and the sales ledger export are there; creating, sending and issuing are not, even by typing the address.
 
 ## Features
 
-**Dashboard**: one period filter (last 12 months, this year, last year) drives every figure below it: cash received, invoiced, still to collect (and how much is late), quote acceptance rate, revenue per month, best clients, invoices to chase, quotes awaiting an answer, recent activity.
-
 **Quotes and invoices**
-- Line editor: free lines or catalogue items, quantity, unit (u, flat rate, hour, m², linear metre), unit price excluding VAT, VAT rate per line (20 %, 10 % for renovation work in homes, 5.5 %), reorder and delete lines, live totals with VAT per rate.
-- Life cycle: draft → sent → accepted / refused / expired for quotes; draft → issued → paid, with "late" computed from the due date, for invoices.
-- French rules built in: sequential numbering in date order with no gaps (`F-2026-0023`), the invoice date is the issue date, an issued invoice can no longer be edited or deleted, mandatory mentions on the PDF (late payment penalties, €40 recovery fee for business clients, no discount for early payment, VAT number and SIRET).
-- History on every document: created, sent, viewed by the client, accepted (by whom), converted, paid, reminders.
+- Line editor with units (hour, m², linear metre, lump sum…), VAT at 20, 10 or 5.5 %, a catalogue of usual work, drag-and-drop reordering that also works with the keyboard and is announced to screen readers, unsaved-changes warning.
+- Totals in integer cents with VAT per rate; quotes valid 30 days, then shown as expired; invoices due in 30 days, then shown as late.
+- **French invoicing rules:** chronological numbering per year without gaps (`D-2026-0037`, `F-2026-0021`), a quote gets its number when it is sent and an invoice its number and date when it is issued, an issued invoice can be neither edited nor deleted, legal mentions on the PDF (SIRET, VAT number, late-payment penalties, the €40 recovery fee for business clients).
+- **PDF generated in the browser** by a small PDF 1.4 writer written for this project (no library, no server): A4 layout, line table, VAT breakdown, conditions, signature block. The document never leaves the device. [Sample invoice (PDF, 7 KB)](docs/exemple-facture.pdf).
+- History on every document (created, sent, opened, accepted, converted, issued, reminded, paid: who and when), duplicate, sales ledger export to CSV.
 
-**PDF in the browser, no library** ([`pdf.js`](assets/js/pdf.js), [`docpdf.js`](assets/js/docpdf.js)): a small PDF 1.4 writer using the standard Helvetica fonts in WinAnsi encoding (French accents, « », €) with the real Adobe font metrics for right-aligned amounts and word wrapping. Multi-page tables repeat their header; the text stays selectable and searchable. Documents never leave the browser.
+**Client portal and e-signature**
+- Each client has a private link (a random 16-character token, about 80 bits) that the owner can replace in one click; the old link stops working at once.
+- The client sees the quotes to answer, signs (name and "approved" box) or refuses with a note, downloads PDFs and pays an invoice in a simulated payment.
+- **Acceptance proof:** the signed quote gets a SHA-256 fingerprint of its number, client, lines, total, signatory and time. It is recomputed every time the quote is shown, so a quote changed after signature shows as tampered (a browser test changes one price to prove it).
+- The office tab is told live when a client opens, signs, refuses or pays (BroadcastChannel), with a link to the document.
 
-**Client portal**: each client has a private link with a random 16-character token (about 80 bits). The client sees quotes to approve, signs with their name, refuses with an optional note, downloads PDFs and pays invoices (simulated). The first view of a quote is written to its history, like a read receipt.
+**Office**
+- Dashboard over the last 12 months or a calendar year: cashed and invoiced revenue, amount still to collect and how much of it is late, acceptance rate, revenue per month (with its data table), best clients, invoices to chase, quotes awaiting an answer, recent activity.
+- Reminder dialog with a ready-to-copy message (amount, due date, days late) that stays editable; payment dialog (transfer, card, cheque, cash).
+- Clients (companies or individuals, SIRET checked) with their documents and totals; status filters and instant search on quotes and invoices; Ctrl K searches everything.
+- **Two roles**, checked in the state functions and not only hidden in the interface: the **owner** does everything, the **accountant** records payments, sends reminders and exports.
 
-**Charts** built in plain HTML and CSS: one series per chart, thin bars with rounded data ends, hairline grid, value labels only on the highest and current month, tooltips on hover and on keyboard focus, and a data table behind every chart.
+| Signed quote with its proof | Issued invoice |
+| --- | --- |
+| ![Accepted quote: lines, totals, history and the acceptance proof with its verified SHA-256 fingerprint](docs/proof.webp) | ![Late invoice with PDF download, client view, reminder and payment actions](docs/invoice.webp) |
 
-| Quote with acceptance proof | Client portal |
-|---|---|
-| ![Quote view with lines, totals, actions and history](docs/desktop-quote.webp) | ![Client portal: quote to sign with name and checkbox](docs/desktop-portal.webp) |
+| Client portal | Quote editor |
+| --- | --- |
+| ![The client's private page: a quote to sign or refuse, and all their documents with PDFs](docs/portal.webp) | ![New quote: client, subject, lines with drag handles, catalogue, totals and notes](docs/editor.webp) |
 
-| Invoices | Line editor on a phone (dark theme) |
-|---|---|
-| ![Invoice list with status filters and amounts](docs/desktop-invoices.webp) | ![New quote editor on a phone in dark theme](docs/mobile-editor-dark.webp) |
+| Quotes | Dark theme |
+| --- | --- |
+| ![Quote list with status filters and counts, search, numbers, clients, amounts and statuses](docs/quotes.webp) | ![The dashboard in the dark theme](docs/dashboard-dark.webp) |
 
-## Security by default
+| Dashboard on a phone | Editor on a phone |
+| --- | --- |
+| ![Dashboard on a phone with the bottom navigation](docs/mobile-dashboard.webp) | ![Quote editor on a phone](docs/mobile-editor.webp) |
 
-| Measure | How |
-|---|---|
-| Strict Content-Security-Policy | `default-src 'none'`; scripts, styles, fonts and images from this site only; `form-action 'none'`, `base-uri 'none'`, `object-src 'none'`. |
-| Trusted Types | `require-trusted-types-for 'script'` with `trusted-types 'none'`. No `innerHTML`: every element is created by code and user text is always displayed as text ([`core.js`](assets/js/core.js)). |
-| Local PDF generation | Quotes and invoices are generated in the browser: no document is sent to an online converter. |
-| Integrity proof | An accepted quote stores a SHA-256 fingerprint of its number, lines, total, signer and time. |
-| Unguessable portal links | 16 random characters from `crypto.getRandomValues`. In production: links that expire, sent by e-mail and revocable. |
-| Defensive storage | All saved data is checked against a schema on load (types, lengths, dates, VAT rates, units); corrupt or hand-edited data is discarded. |
-| Clean input | Invisible and bidi characters removed, length limits, checks on e-mail, French phone, postcode and SIRET. |
-| CSV export | Formula injection neutralised. |
-| No third party | No CDN, analytics, cookies or trackers; font served from the site. |
+## Engineering
 
-A production version adds server-side authentication (hashed passwords, two-factor), access control on every document, HTTP security headers, logs, encrypted backups, GDPR retention rules (accounting records: 10 years) and support for the French e-invoicing reform (Factur-X through an approved platform).
+**Stack:** React 19, TypeScript 6 in strict mode, Vite 8, Zustand, Zod (`zod/mini`), dnd-kit. No UI kit, no PDF or chart library, no router library (a small typed hash router fits GitHub Pages). Every dependency is pinned to an exact version.
 
-## Performance
+```mermaid
+flowchart LR
+  subgraph Office tab
+    Office[Dashboard, editor, documents, clients] --> Store[Zustand store]
+  end
+  subgraph Client tab
+    Portal[Private portal: sign, refuse, pay] --> Store2[Same store]
+  end
+  Store2 -- "BroadcastChannel: event + validated state" --> Store
+  Store -- "sent, reminded, link replaced" --> Store2
+  Store --> Domain[Domain: totals per VAT rate, statuses, numbering, acceptance proof, permissions]
+  Store2 --> Domain
+  Store --> PDF[PDF writer: A4 layout in the browser]
+```
 
-Lighthouse on the live site (22 October 2026), mobile profile: **Performance 98, Accessibility 100, Best Practices 100, SEO 100**; desktop profile: 100 on all four. One variable font (48 KB) preloaded with `font-display: optional` so the layout never jumps, the theme is applied before the first paint, no dependency to download.
+- **Money in integer cents**, VAT computed per rate and rounded once per rate, as on a paper invoice.
+- **Statuses are derived, not stored**: "expired" and "late" come from the dates when the document is read, so they are never stale.
+- **Numbering as a rule, not a counter in the UI.** `nextNumber` gives the next number of the year, and `numberingProblems` checks that the numbers follow the dates without gaps; the seed data goes through it in the tests.
+- **Permissions in the domain.** `sendQuote`, `issueInvoice`, `recordPayment`, `saveClient` take the staff account and refuse what its role does not allow; the interface only reflects it.
+- **Everything persisted is validated.** Storage and cross-tab messages go through the same Zod schemas; tampered or corrupt data is rejected as a whole and the seed takes over.
+- **Light first load.** The shell and the dashboard come first; documents, editor, portal and clients load on demand, and a build-time service worker precaches them for offline use.
 
-## Stack
+```
+src/
+  domain/   catalogue and company, schemas, rules (dates, totals, statuses, numbering, proof payload), seed data
+  state/    the store and every action (drafts, sending, signature, invoices, payments, reminders, clients), staff session
+  pdf/      writer.ts (PDF 1.4: fonts, text, shapes) and layout.ts (quote and invoice pages)
+  shared/   router, i18n, security helpers, anti-spam, persisted store, service worker, UI primitives
+  ui/       status chip, line and total tables, history, charts
+  pages/    Dashboard, DocList, DocPage (view, proof, editor), Clients, Portal, Login, Security
+build/      Vite plugins: CSP meta tag, service worker
+tests/      unit/ (Vitest) and e2e/ (Playwright)
+```
 
-- HTML, CSS and vanilla JavaScript (ES modules). No framework, no build step, no runtime dependency, PDF writer included.
-- Font: Inter variable, self-hosted (from `@fontsource-variable/inter` 5.3.0, SIL Open Font License). Helvetica metrics for the PDF come from the Adobe Core 14 AFM files.
-- Hosted on GitHub Pages.
+## Quality gates
 
-## Run locally
+Every push runs the [CI workflow](.github/workflows/ci.yml); the site is deployed to GitHub Pages only when everything passes.
+
+| Gate | What it checks |
+| --- | --- |
+| Lint and types | `typescript-eslint` strict, React hooks rules, ban on `innerHTML` and friends; `tsc` strict |
+| Unit tests | 80 Vitest tests: dates, totals per VAT rate, statuses, numbering without gaps, the whole quote-to-paid-invoice life cycle, frozen invoices, acceptance proof and tampering, roles, portal links, sign-in throttling, PDF output, translations. Coverage thresholds on the logic (97 % of lines today) |
+| Browser tests | 20 Playwright scenarios on a desktop and a mobile profile: the full flow across two tabs (sign in the portal, live notice, invoice, PDF download checked, payment), drag-and-drop with mouse and keyboard, roles, refusal and simulated payment, language switch, a quote tampered after signature, a replaced portal link, offline mode, axe scans (WCAG 2.2 AA) in both themes, CSP and Trusted Types. Any console error fails the test |
+| Lighthouse | Lighthouse CI budgets: performance ≥ 90, accessibility 100, best practices 100, SEO ≥ 90 |
+| Supply chain | `npm audit`, `npm ci --ignore-scripts`, Actions pinned by commit SHA, Dependabot with a 7-day cooldown |
+
+Lighthouse on the production build (23 October 2026): **97 / 100 / 100 / 100** on mobile, **100 / 100 / 100 / 100** on desktop.
+
+## Security
+
+- **Strict Content Security Policy with Trusted Types:** scripts, styles, fonts and images from the site only; the browser refuses any HTML string injection, and a browser test proves it. No CDN, analytics, cookies or trackers.
+- **Documents stay on the device:** PDFs and CSV files are built in the browser; CSV export neutralises spreadsheet formulas (`=`, `+`, `-`, `@`).
+- **Portal links** are random, unguessable and revocable; the portal shows only that client's documents.
+- **Acceptance proof** recomputed on every display, so a change after signature cannot go unnoticed.
+- **Accounts:** PBKDF2-SHA256 (100,000 iterations, random salt), constant-time comparison, no account enumeration, 30-second lock after five failures; only the staff id is kept, in `sessionStorage`.
+- **Clean input:** invisible and bidi characters removed, length limits, format checks (e-mail, phone, SIRET). The portal's free-text refusal form has a honeypot, refuses links and is limited per device.
+
+**Limits, stated plainly:** this is a front-end demo, so documents and clients live in the browser and the demo accounts are public. In production the same rules run on a server: server-side access control on every document, Argon2id and two-factor sign-in, short sessions, CSP and HSTS sent as HTTP headers, an audit log and tested backups, GDPR retention (10 years for accounting records), and Factur-X e-invoicing through an approved platform for the French reform. The app's **Security** page says the same, in French and English.
+
+## Run it locally
+
+Requires Node.js 24.
 
 ```bash
-python -m http.server 8000
+npm ci
+npm run dev
 ```
 
-Then open http://localhost:8000/.
-
-## Project structure
-
-```
-index.html              shell (sidebar / bottom tab bar), CSP
-assets/js/core.js       safe DOM builder, storage, input cleaning, helpers
-assets/js/data.js       company, catalogue, demo history, totals, numbering, validation
-assets/js/state.js      store, selectors, status chips
-assets/js/actions.js    send, accept, convert, issue, pay, remind
-assets/js/pdf.js        minimal PDF writer
-assets/js/docpdf.js     quote and invoice layout
-assets/js/charts.js     column chart and bar list
-assets/js/dashboard.js  dashboard
-assets/js/docs.js       lists, editor, document view
-assets/js/clients.js    clients
-assets/js/portal.js     client portal
-assets/js/app.js        router, theme, security page
+```bash
+npm test               # unit tests
+npm run test:e2e       # builds, serves and runs the browser tests (uses the installed Chrome locally)
+npm run build          # production build in dist/
 ```
 
 ## Credits and license
 
 - Code: [MIT](LICENSE), © 2026 Mohamed Zineddine Barkat.
+- Font: Inter, SIL Open Font License, self-hosted. PDF text uses the standard Helvetica fonts built into every PDF reader (glyph widths from Adobe's Helvetica AFM metrics).
 - Company, clients, amounts, SIRET, VAT number and IBAN are fictional. Phone numbers come from the blocks ARCEP reserves for fiction (05 36 49 and 06 39 98); e-mail addresses use the reserved `.example` and `example.com` domains.
 
 **Want a tool like this for your business?** [Get in touch](https://barkatzineddine.github.io/#contact).

@@ -72,7 +72,7 @@ test.describe('pre-rendered first screen', () => {
 test.describe('without JavaScript', () => {
   test.use({ javaScriptEnabled: false });
   test('the first screen still reads', async ({ page }) => {
-    await page.goto('./');
+    await page.goto('./', { waitUntil: 'commit' }); // no app will replace the copy
     await expect(heading(page)).toBeVisible();
   });
 });

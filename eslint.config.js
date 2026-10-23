@@ -23,5 +23,5 @@ export default tseslint.config(
   // Playwright fixtures call a function named use(): not a React hook
   { files: ['tests/e2e/**'], rules: { 'react-hooks/rules-of-hooks': 'off' } },
   // classic scripts served as they are (the pre-paint theme script)
-  { files: ['public/**/*.js'], languageOptions: { globals: globals.browser } },
+  { files: ['src/boot.js'], languageOptions: { globals: globals.browser } },
 );

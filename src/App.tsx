@@ -5,10 +5,13 @@ import { useFormat } from './format';
 import { app, sealSeed, useBooks } from './state/app';
 import { setStaff, useStaff } from './state/session';
 import { Link, match, navigate, useLocation, useScrollOnNavigate } from './shared/router';
+import { usePrerenderHandoff } from './shared/prerender';
 import { onInstallPrompt } from './shared/sw';
 import { CommandPalette, type Command } from './shared/ui/CommandPalette';
 import { FeedbackProvider, useFeedback } from './shared/ui/Feedback';
 import { docPath } from './ui/common';
+// not lazy: the sign-in page is the pre-rendered first screen, which the first render must replace with itself
+import Login from './pages/Login';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const DocList = lazy(() => import('./pages/DocList'));
@@ -18,10 +21,10 @@ const ClientPage = lazy(() => import('./pages/Clients').then((m) => ({ default: 
 const Portal = lazy(() => import('./pages/Portal').then((m) => ({ default: m.Portal })));
 const PortalPicker = lazy(() => import('./pages/Portal').then((m) => ({ default: m.PortalPicker })));
 const Security = lazy(() => import('./pages/Security'));
-const Login = lazy(() => import('./pages/Login'));
 
 export function App() {
   const { t } = useFormat();
+  usePrerenderHandoff();
   return (
     <FeedbackProvider closeLabel={t('common.close')}>
       <Shell />

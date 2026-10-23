@@ -16,9 +16,12 @@ export function registerServiceWorker(): void {
       },
     }).createScriptURL(url)
     : url;
-  window.addEventListener('load', () => {
+  const register = () => {
     navigator.serviceWorker.register(scriptUrl as string, { scope: import.meta.env.BASE_URL }).catch(() => { /* offline support is optional */ });
-  });
+  };
+  // after the page's own downloads; a pre-rendered first visit starts the app after "load" already fired
+  if (document.readyState === 'complete') register();
+  else window.addEventListener('load', register);
 }
 
 /** "Install the app" prompt (Chromium): resolves with a function to show it, or null. */

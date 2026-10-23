@@ -81,6 +81,7 @@ flowchart LR
 - **Permissions in the domain.** `sendQuote`, `issueInvoice`, `recordPayment`, `saveClient` take the staff account and refuse what its role does not allow; the interface only reflects it.
 - **Everything persisted is validated.** Storage and cross-tab messages go through the same Zod schemas; tampered or corrupt data is rejected as a whole and the seed takes over.
 - **Light first load.** The shell and the dashboard come first; documents, editor, portal and clients load on demand, and a build-time service worker precaches them for offline use.
+- **Pre-rendered first screen.** After the build, `build/prerender.ts` opens the built app in headless Chrome with empty storage and copies the rendered sign-in page into `index.html`, so a first visit sees it before any JavaScript arrives. The copy is inert, and the app replaces it on its first render without replaying entrance animations; the app's code downloads with the page (`modulepreload`) but runs only after that first paint. A tiny inline script, allowed by its CSP hash, shows the copy only on a first visit: a deep link, saved data or another language never flash the wrong screen. On a simulated mobile 4G line, the sign-in page now appears after 0.64 s instead of 1.30 s.
 
 ```
 src/
@@ -90,7 +91,7 @@ src/
   shared/   router, i18n, security helpers, anti-spam, persisted store, service worker, UI primitives
   ui/       status chip, line and total tables, history, charts
   pages/    Dashboard, DocList, DocPage (view, proof, editor), Clients, Portal, Login, Security
-build/      Vite plugins: CSP meta tag, service worker
+build/      Vite plugins (CSP meta tag with the boot script's hash, service worker, app preload) and the pre-render step
 tests/      unit/ (Vitest) and e2e/ (Playwright)
 ```
 
@@ -101,12 +102,12 @@ Every push runs the [CI workflow](.github/workflows/ci.yml); the site is deploye
 | Gate | What it checks |
 | --- | --- |
 | Lint and types | `typescript-eslint` strict, React hooks rules, ban on `innerHTML` and friends; `tsc` strict |
-| Unit tests | 85 Vitest tests: dates, totals per VAT rate, statuses, numbering without gaps, the whole quote-to-paid-invoice life cycle, frozen invoices, acceptance proof and tampering, roles, portal links, sign-in throttling, PDF output, translations, the service worker's network timeout. Coverage thresholds on the logic (97 % of lines today) |
-| Browser tests | 20 Playwright scenarios on a desktop and a mobile profile: the full flow across two tabs (sign in the portal, live notice, invoice, PDF download checked, payment), drag-and-drop with mouse and keyboard, roles, refusal and simulated payment, language switch, a quote tampered after signature, a replaced portal link, offline mode, axe scans (WCAG 2.2 AA) in both themes, CSP and Trusted Types. Any console error fails the test |
+| Unit tests | 87 Vitest tests: dates, totals per VAT rate, statuses, numbering without gaps, the whole quote-to-paid-invoice life cycle, frozen invoices, acceptance proof and tampering, roles, portal links, sign-in throttling, PDF output, translations, the service worker's network timeout, the CSP hash of the inlined boot script. Coverage thresholds on the logic (97 % of lines today) |
+| Browser tests | 25 Playwright scenarios on a desktop and a mobile profile: the pre-rendered first screen (shown before the app, replaced without a flash, hidden on deep links and returning visits, readable without JavaScript), the full flow across two tabs (sign in the portal, live notice, invoice, PDF download checked, payment), drag-and-drop with mouse and keyboard, roles, refusal and simulated payment, language switch, a quote tampered after signature, a replaced portal link, offline mode, axe scans (WCAG 2.2 AA) in both themes, CSP and Trusted Types. Any console error fails the test |
 | Lighthouse | Lighthouse CI budgets: performance ≥ 90, accessibility 100, best practices 100, SEO ≥ 90 |
 | Supply chain | `npm audit`, `npm ci --ignore-scripts`, Actions pinned by commit SHA, Dependabot with a 7-day cooldown |
 
-Lighthouse on the production build (23 October 2026): **97 / 100 / 100 / 100** on mobile, **100 / 100 / 100 / 100** on desktop.
+Lighthouse on the production build (23 October 2026): **99 / 100 / 100 / 100** on mobile, **100 / 100 / 100 / 100** on desktop.
 
 ## Security
 

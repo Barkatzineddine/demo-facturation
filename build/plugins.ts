@@ -2,8 +2,8 @@
 // Build-time plugins: the CSP meta tag (only in production, the dev server needs inline HMR code)
 // and a small service worker that precaches the app shell for offline use.
 import { createHash } from 'node:crypto';
-import { readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
 import type { Plugin } from 'vite';
 
 export const CSP = [
@@ -23,13 +23,53 @@ export const CSP = [
   'trusted-types sw-url',
 ].join('; ');
 
+/**
+ * Production CSP meta tag. Scripts marked data-inline in index.html (the pre-paint boot script) are
+ * inlined, which saves a render-blocking request, and allowed by their hash: the policy stays strict.
+ */
 export function cspPlugin(): Plugin {
+  let root = '';
   return {
     name: 'csp-meta',
     apply: 'build',
+    configResolved(config) { root = config.root; },
     transformIndexHtml: {
       order: 'pre',
-      handler: (html) => html.replace('<!-- CSP -->', `<meta http-equiv="Content-Security-Policy" content="${CSP}">`),
+      handler: (html) => inlineScripts(html, (file) => readFileSync(join(root, file), 'utf8')),
+    },
+  };
+}
+
+export function inlineScripts(html: string, read: (file: string) => string): string {
+  const hashes: string[] = [];
+  const inlined = html.replace(/<script src="\/?([^"]+)" data-inline><\/script>/g, (_, file: string) => {
+    const code = read(file).trim();
+    hashes.push(`'sha256-${createHash('sha256').update(code).digest('base64')}'`);
+    return `<script>${code}</script>`;
+  });
+  const csp = CSP.replace("script-src 'self'", ["script-src 'self'", ...hashes].join(' '));
+  return inlined.replace('<!-- CSP -->', `<meta http-equiv="Content-Security-Policy" content="${csp}">`);
+}
+
+/**
+ * src/main.tsx imports the app dynamically, after the first paint: this preloads the app's chunks with
+ * the page, so deferring its evaluation costs no extra round trip.
+ */
+export function preloadAppPlugin(entry = 'src/start.tsx'): Plugin {
+  let base = '/';
+  return {
+    name: 'preload-app',
+    apply: 'build',
+    configResolved(config) { base = config.base; },
+    transformIndexHtml: {
+      order: 'post',
+      handler: (html, ctx) => {
+        const app = Object.values(ctx.bundle ?? {}).find((c) => c.type === 'chunk' && c.facadeModuleId?.replaceAll(sep, '/').endsWith(entry));
+        if (!app || app.type !== 'chunk') throw new Error(`no chunk for ${entry}`);
+        const links = [app.fileName, ...app.imports].filter((f) => !html.includes(`${base}${f}"`))
+          .map((f) => `<link rel="modulepreload" crossorigin href="${base}${f}">`);
+        return html.replace('</head>', [...links, '</head>'].join(''));
+      },
     },
   };
 }

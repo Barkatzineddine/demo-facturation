@@ -1,21 +1,13 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { App } from './App';
-import { I18nProvider } from './i18n';
-import { sealSeed } from './state/app';
-import { registerServiceWorker } from './shared/sw';
+// Entry point: the stylesheet, then the app (src/start.tsx). The app's code downloads with the page
+// (modulepreload, see build/plugins.ts), but on a pre-rendered first visit (src/boot.js) it runs only
+// after that page has painted: evaluating it first would hold the paint until it is done.
 import './styles/global.css';
 
-const root = document.getElementById('root');
-if (!root) throw new Error('#root missing');
+const start = () => { void import('./start'); };
 
-createRoot(root).render(
-  <StrictMode>
-    <I18nProvider>
-      <App />
-    </I18nProvider>
-  </StrictMode>,
-);
-
-void sealSeed();
-registerServiceWorker();
+if (document.documentElement.dataset.prerender === 'shown') {
+  let started = false;
+  const once = () => { if (!started) { started = true; start(); } };
+  requestAnimationFrame(() => { setTimeout(once); });
+  setTimeout(once, 100); // hidden tabs get no animation frame
+} else start();

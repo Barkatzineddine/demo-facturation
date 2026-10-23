@@ -1,11 +1,11 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { cspPlugin, serviceWorkerPlugin } from './build/plugins.ts';
+import { cspPlugin, preloadAppPlugin, serviceWorkerPlugin } from './build/plugins.ts';
 
 export default defineConfig({
   base: '/demo-facturation/',
-  plugins: [react(), cspPlugin(), serviceWorkerPlugin((f) => !/(-960|-1100|-1600)\.webp$|og\.jpg$|robots\.txt$/.test(f))],
+  plugins: [react(), cspPlugin(), preloadAppPlugin(), serviceWorkerPlugin((f) => !/(-960|-1100|-1600)\.webp$|og\.jpg$|robots\.txt$/.test(f))],
   build: { target: 'es2022', sourcemap: false, assetsInlineLimit: 0 },
   test: {
     environment: 'jsdom',

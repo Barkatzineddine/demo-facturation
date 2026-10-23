@@ -68,6 +68,7 @@ test('lines reorder with the mouse and with the keyboard', async ({ page, isMobi
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2, box.y - 10, { steps: 4 });
+  await expect(page.locator('.le-row.is-dragging')).toHaveCount(1); // past the 5 px activation distance: the drag is on
   await page.mouse.move(box.x + box.width / 2, first.y + 4, { steps: 16 });
   await page.waitForTimeout(200); // let the sortable settle on its target before dropping
   await page.mouse.up();
@@ -121,6 +122,7 @@ test('portal: unknown link, refusal with a note, simulated payment', async ({ pa
 
   const payer = await stored(page, (s) => s.clients.find((c) => s.docs.some((d) => d.client === c.id && d.kind === 'invoice' && d.status === 'issued'))?.token ?? '');
   await page.goto(`./#/portail/${payer}`);
+  await expect(page.getByRole('button', { name: /^Payer/ }).first()).toBeVisible(); // the portal loads on demand
   const before = await page.getByRole('button', { name: /^Payer/ }).count();
   await page.getByRole('button', { name: /^Payer/ }).first().click();
   await page.getByRole('dialog').getByRole('button', { name: 'Simuler le paiement' }).click();
